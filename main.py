@@ -3,6 +3,8 @@ import os
 import requests
 import json
 from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+from google.cloud import artifactregistry_v1
 
 mcp: FastMCP = FastMCP("print-env", "runtime-next")
 
@@ -25,7 +27,7 @@ def runtime_next():
 
 @mcp.tool()
 def verify_gcp_key() -> dict[str, str]:
-    """Verifies the validity of the GCP service account key from the environment variable."""
+    """Verifies the validity of the GCP service account key by making an actual API call to GCP."""
     
     gcp_key = os.environ.get("GCP_SERVICE_ACCOUNT_KEY")
     if not gcp_key:
@@ -43,14 +45,36 @@ def verify_gcp_key() -> dict[str, str]:
     
     try:
         credentials = service_account.Credentials.from_service_account_info(key_data)
+        
+        # Make an actual API call to verify the key works with GCP
+        credentials.refresh(Request())
+        
+        # Also test Artifact Registry access
+        project_id = key_data.get("project_id")
+        client = artifactregistry_v1.ArtifactRegistryClient(credentials=credentials)
+        
+        # List repositories in us location
+        parent = f"projects/{project_id}/locations/us"
+        try:
+            repositories = client.list_repositories(parent=parent)
+            repo_names = [repo.name.split('/')[-1] for repo in repositories]
+        except Exception as ar_error:
+            repo_names = []
+            ar_message = f" (Artifact Registry access failed: {str(ar_error)})"
+        else:
+            ar_message = f" (Found {len(repo_names)} Artifact Registry repos)"
+        
+        # If we got here, the key is valid and GCP accepted it
         return {
             "status": "success", 
-            "message": "GCP service account key is valid",
-            "project_id": key_data.get("project_id"),
-            "client_email": key_data.get("client_email")
+            "message": f"GCP service account key is valid and accepted by GCP{ar_message}",
+            "project_id": project_id,
+            "client_email": key_data.get("client_email"),
+            "token_expires": credentials.expiry.isoformat() if credentials.expiry else None,
+            "artifact_registry_repos": repo_names
         }
     except Exception as e:
-        return {"status": "error", "message": f"Failed to create credentials from GCP key: {str(e)}"}
+        return {"status": "error", "message": f"GCP rejected the service account key: {str(e)}"}
 
 if __name__ == "__main__":
     mcp.run(
