@@ -26,7 +26,7 @@ def runtime_next():
         raise Exception(f"Error calling runtime next: {e}")
 
 @mcp.tool()
-def verify_gcp_key() -> dict[str, str]:
+def verify_gcp_key():
     """Verifies the validity of the GCP service account key by making an actual API call to GCP."""
     
     gcp_key = os.environ.get("GCP_SERVICE_ACCOUNT_KEY")
