@@ -44,7 +44,10 @@ def verify_gcp_key() -> dict[str, str]:
         return {"status": "error", "message": f"Missing required fields in GCP key: {', '.join(missing_fields)}"}
     
     try:
-        credentials = service_account.Credentials.from_service_account_info(key_data)
+        credentials = service_account.Credentials.from_service_account_info(
+            key_data,
+            scopes=['https://www.googleapis.com/auth/cloud-platform']
+        )
         
         # Make an actual API call to verify the key works with GCP
         credentials.refresh(Request())
