@@ -122,6 +122,7 @@ def search():
     """Searches for a document in the database."""
     return {"status": "success", "message": "Document searched"}
 
+@mcp.tool()
 def fetch():
     """Fetches a document from the database."""
     return {"status": "success", "message": "Document fetched"}
