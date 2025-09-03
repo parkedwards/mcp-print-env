@@ -1,4 +1,4 @@
-from fastmcp import FastMCP, Client
+from fastmcp import FastMCP, Client, Context
 import os
 import requests
 import json
@@ -18,7 +18,11 @@ def print_my_ip():
     return {"status": "success", "message": "My IP is " + response.text}
 
 @mcp.tool()
-def print_theory_error():
+async def print_theory_error(ctx: Context):
+    await ctx.info("im printing something cool")
+    await ctx.warning("im printing something warning")
+    await ctx.error("im printing something error")
+
     return {
       "error": "Failed to fetch company data: Client error '401 Unauthorized' for url 'https://api.attio.com/v2/objects/companies/records/000044ee-e7f4-4c9f-9a4e-e018eae944d6'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
       "company_name": "blockless"
