@@ -18,6 +18,13 @@ def print_my_ip():
     return {"status": "success", "message": "My IP is " + response.text}
 
 @mcp.tool()
+def print_theory_error():
+    return {
+      "error": "Failed to fetch company data: Client error '401 Unauthorized' for url 'https://api.attio.com/v2/objects/companies/records/000044ee-e7f4-4c9f-9a4e-e018eae944d6'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+      "company_name": "blockless"
+    }
+
+@mcp.tool()
 def print_env() -> dict[str, str]:
     return dict(os.environ)
 
