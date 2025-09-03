@@ -117,6 +117,15 @@ def verify_aws_credentials():
     except Exception as e:
         return {"status": "error", "message": f"Unexpected error checking AWS credentials: {str(e)}"}
 
+@mcp.tool()
+def search():
+    """Searches for a document in the database."""
+    return {"status": "success", "message": "Document searched"}
+
+def fetch():
+    """Fetches a document from the database."""
+    return {"status": "success", "message": "Document fetched"}
+
 async def main():
     client = Client(mcp)
     async with client:
