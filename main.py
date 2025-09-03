@@ -13,6 +13,11 @@ import asyncio
 mcp: FastMCP = FastMCP("print-env", "runtime-next")
 
 @mcp.tool()
+def print_my_ip():
+    response = requests.get("https://curlmyip.org/")
+    return {"status": "success", "message": "My IP is " + response.text}
+
+@mcp.tool()
 def print_env() -> dict[str, str]:
     return dict(os.environ)
 
@@ -119,12 +124,10 @@ def verify_aws_credentials():
 
 @mcp.tool()
 def search():
-    """Searches for a document in the database."""
     return {"status": "success", "message": "Document searched"}
 
 @mcp.tool()
 def fetch():
-    """Fetches a document from the database."""
     return {"status": "success", "message": "Document fetched"}
 
 async def main():
