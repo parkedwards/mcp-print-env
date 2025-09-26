@@ -13,6 +13,10 @@ import asyncio
 mcp: FastMCP = FastMCP("print-env", "runtime-next")
 
 @mcp.tool()
+def a_cool_new_tool():
+    return {"status": "success", "message": "A COOL TOOL WAS TOOLED"}
+
+@mcp.tool()
 def print_my_ip():
     response = requests.get("https://curlmyip.org/")
     return {"status": "success", "message": "My IP is " + response.text}
