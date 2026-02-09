@@ -17,6 +17,10 @@ def a_cool_new_tool():
     return {"status": "success", "message": "A COOL TOOL WAS TOOLED"}
 
 @mcp.tool()
+def a_tool_on_monday_feb_9():
+    return {"status": "success", "message": "A TOOL ON MONDAY FEB 9 WAS TOOLED"}
+
+@mcp.tool()
 def print_my_ip():
     response = requests.get("https://curlmyip.org/")
     return {"status": "success", "message": "My IP is " + response.text}
