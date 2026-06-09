@@ -1,4 +1,5 @@
 from fastmcp import FastMCP, Client, Context
+from fastmcp.server.dependencies import get_http_headers
 import os
 import requests
 import json
@@ -11,6 +12,59 @@ from botocore.exceptions import ClientError, NoCredentialsError
 import asyncio
 
 mcp: FastMCP = FastMCP("print-env", "runtime-next")
+
+SENSITIVE_HEADER_NAMES = {
+    "authorization",
+    "cookie",
+    "proxy-authorization",
+    "set-cookie",
+    "x-api-key",
+    "x-auth-token",
+}
+
+
+def redact_headers(headers: dict[str, str]) -> dict[str, str]:
+    return {
+        name: "<redacted>" if name.lower() in SENSITIVE_HEADER_NAMES else value
+        for name, value in headers.items()
+    }
+
+
+@mcp.tool()
+def check_fastmcp_headers(include_all: bool = True, header_name: str | None = None):
+    """Inspect HTTP headers visible to FastMCP for the current tool request."""
+
+    headers = get_http_headers(include_all=include_all)
+    redacted_headers = redact_headers(headers)
+
+    if header_name:
+        normalized_header_name = header_name.lower()
+        header_present = normalized_header_name in headers
+        return {
+            "status": "success" if header_present else "missing",
+            "message": (
+                f"Header '{normalized_header_name}' is present"
+                if header_present
+                else f"Header '{normalized_header_name}' was not found"
+            ),
+            "header_name": normalized_header_name,
+            "header_present": header_present,
+            "header_value": redacted_headers.get(normalized_header_name),
+            "header_count": len(headers),
+        }
+
+    return {
+        "status": "success" if headers else "missing",
+        "message": (
+            f"FastMCP exposed {len(headers)} HTTP headers"
+            if headers
+            else "No HTTP headers found. This tool must be called over an HTTP transport to inspect request headers."
+        ),
+        "include_all": include_all,
+        "header_count": len(headers),
+        "headers": redacted_headers,
+    }
+
 
 @mcp.tool()
 def a_cool_new_tool():
